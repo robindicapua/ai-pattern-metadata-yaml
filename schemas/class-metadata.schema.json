@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "class-metadata.schema.json",
+  "title": "Class Metadata",
+  "description": "Schema for class-level governance laws — laws shared by a family of patterns (e.g. all multi-step flows). A pattern opts in with pattern.extends; a pattern law can supersede a class law via refines (lex specialis).",
+  "type": "object",
+  "required": ["class", "scope", "laws"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Path to this JSON Schema for IDE validation and autocomplete."
+    },
+    "class": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "Class family name, referenced by a pattern's `extends` (e.g. 'flow')."
+    },
+    "scope": {
+      "type": "string",
+      "pattern": "^[A-Z]{2,6}$",
+      "description": "Scope code that prefixes every law id in this file (e.g. 'FLOW')."
+    },
+    "tier": {
+      "type": "string",
+      "const": "class",
+      "description": "Always 'class' (optional; documentation only)."
+    },
+    "description": {
+      "type": "string",
+      "description": "What this family is and what its shared laws govern."
+    },
+    "triggers": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Base keywords that resolve these laws for any task of this family. The generator also unions in the keywords of every pattern that extends this class."
+    },
+    "laws": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/law" }
+    }
+  },
+  "definitions": {
+    "law": {
+      "type": "object",
+      "required": ["id", "title", "statement", "severity"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Z]{2,6}-[0-9]+$",
+          "description": "Authored, stable law citation (e.g. 'FLOW-1')."
+        },
+        "title": { "type": "string", "description": "Short human sentence naming the law." },
+        "statement": { "type": "string", "description": "The binding text of the law." },
+        "rationale": { "type": "string", "description": "Why the law exists." },
+        "severity": {
+          "type": "string",
+          "enum": ["error", "warning", "info"],
+          "description": "How hard the law pushes back. A pattern may refine this to a stricter severity."
+        },
+        "appliesWhen": {
+          "type": "object",
+          "description": "The trigger / jurisdiction. Common keys: patternClass, scope, step.",
+          "additionalProperties": true
+        },
+        "note": { "type": "string", "description": "Authoring note." }
+      }
+    }
+  }
+}

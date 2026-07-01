@@ -1,0 +1,199 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "pattern-metadata.schema.json",
+  "title": "Pattern Metadata",
+  "description": "Schema for pattern-level (flow/template) governance laws. A pattern owns a scope code and a set of citable laws; each law may have per-step provisions, may inherit class laws via pattern.extends, and may refine (supersede) a class law.",
+  "type": "object",
+  "required": ["pattern", "laws"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Path to this JSON Schema for IDE validation and autocomplete."
+    },
+    "pattern": {
+      "type": "object",
+      "description": "Identity of this pattern.",
+      "required": ["name", "id", "scope", "description"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable pattern name (e.g. 'Checkout Flow')."
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Unique kebab-case identifier for this pattern (e.g. 'checkout-flow')."
+        },
+        "scope": {
+          "type": "string",
+          "pattern": "^[A-Z]{2,6}$",
+          "description": "Scope code that prefixes every law id in this file (e.g. 'CHK')."
+        },
+        "category": {
+          "type": "string",
+          "description": "Domain this pattern belongs to (e.g. 'e-commerce', 'onboarding')."
+        },
+        "extends": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Class families this pattern inherits laws from (e.g. ['flow']). The generator unions this pattern's keywords onto the inherited class laws' triggers."
+        },
+        "description": {
+          "type": "string",
+          "description": "What this pattern represents and why it needs flow-level governance."
+        }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "description": "Ordered step definitions, referenced by law provisions for human-readable labels.",
+      "items": {
+        "type": "object",
+        "required": ["id", "name"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$",
+            "description": "Unique kebab-case identifier for this step (e.g. 'order-confirmation')."
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable step name."
+          },
+          "description": {
+            "type": "string",
+            "description": "What happens in this step and what the user is trying to accomplish."
+          },
+          "isFinalStep": {
+            "type": "boolean",
+            "description": "True for the terminal step of the flow."
+          }
+        }
+      }
+    },
+    "laws": {
+      "type": "array",
+      "description": "The pattern's governance laws — each a citable rule, validated holistically against the full composition of a step.",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/law" }
+    },
+    "aiHints": {
+      "type": "object",
+      "description": "Hints for AI agents consuming this pattern.",
+      "additionalProperties": false,
+      "properties": {
+        "keywords": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Terms that trigger this pattern's laws during intent matching. Become the laws' triggers in the generated index."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Natural language guidance for AI agents on how to apply these laws holistically."
+        }
+      }
+    }
+  },
+  "definitions": {
+    "severity": {
+      "type": "string",
+      "enum": ["error", "warning", "info"],
+      "description": "How hard the law pushes back. error = hard block; warning = flagged for review; info = advisory."
+    },
+    "lawId": {
+      "type": "string",
+      "pattern": "^[A-Z]{2,6}-[0-9]+$",
+      "description": "Authored, stable law citation (e.g. 'CHK-1'). Never reused once retired."
+    },
+    "law": {
+      "type": "object",
+      "required": ["id", "title", "statement", "severity"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/definitions/lawId" },
+        "title": {
+          "type": "string",
+          "description": "Short human sentence naming the law."
+        },
+        "refines": {
+          "type": "string",
+          "pattern": "^[A-Z]{2,6}-[0-9]+$",
+          "description": "Id of a class law this law supersedes (lex specialis). Where both apply, this one wins and the class law is suppressed."
+        },
+        "statement": {
+          "type": "string",
+          "description": "The binding text of the law."
+        },
+        "rationale": {
+          "type": "string",
+          "description": "Why the law exists — the prose justification."
+        },
+        "severity": { "$ref": "#/definitions/severity" },
+        "appliesWhen": {
+          "type": "object",
+          "description": "The trigger / jurisdiction. Common keys: pattern, patternClass, step, scope, always.",
+          "additionalProperties": true
+        },
+        "note": {
+          "type": "string",
+          "description": "Authoring note (e.g. a future-promotion reminder)."
+        },
+        "provisions": {
+          "type": "array",
+          "description": "The same law applied to specific steps (the decimal citation, e.g. CHK-1.3).",
+          "items": { "$ref": "#/definitions/provision" }
+        }
+      }
+    },
+    "provision": {
+      "type": "object",
+      "required": ["id", "step", "constraint"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Z]{2,6}-[0-9]+\\.[0-9]+$",
+          "description": "Provision citation (e.g. 'CHK-1.3')."
+        },
+        "step": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Id of the step this provision applies to."
+        },
+        "constraint": { "$ref": "#/definitions/constraint" },
+        "labelHint": {
+          "type": "string",
+          "description": "Suggested label text. Informational only — not enforced."
+        }
+      }
+    },
+    "constraint": {
+      "type": "object",
+      "required": ["type", "component"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["required", "forbidden"],
+          "description": "Whether the configuration must be present or must not appear."
+        },
+        "component": {
+          "type": "string",
+          "description": "PascalCase component name (e.g. 'Button')."
+        },
+        "variant": {
+          "type": "string",
+          "description": "The specific variant this constraint targets. Omit to apply to all variants."
+        },
+        "quantity": {
+          "type": "string",
+          "enum": ["exactly-one", "at-most-one", "at-least-one", "more-than-one"],
+          "description": "How many instances are permitted or required across the full step composition."
+        }
+      }
+    }
+  }
+}
