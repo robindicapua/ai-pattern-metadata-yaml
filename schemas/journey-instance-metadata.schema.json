@@ -1,30 +1,30 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "pattern-metadata.schema.json",
-  "title": "Pattern Metadata",
-  "description": "Schema for pattern-level (flow/template) governance laws. A pattern owns a scope code and a set of citable laws; each law may have per-step provisions, may inherit class laws via pattern.extends, and may refine (supersede) a class law.",
+  "$id": "journey-instance-metadata.schema.json",
+  "title": "Named Journey Metadata",
+  "description": "Schema for a named journey's governance laws (e.g. Checkout Flow). A named journey owns a scope code and a set of citable laws; each law may have per-step provisions, may inherit the generic journey laws via journey.extends, and may refine (supersede) a generic journey law.",
   "type": "object",
-  "required": ["pattern", "laws"],
+  "required": ["journey", "laws"],
   "additionalProperties": false,
   "properties": {
     "$schema": {
       "type": "string",
       "description": "Path to this JSON Schema for IDE validation and autocomplete."
     },
-    "pattern": {
+    "journey": {
       "type": "object",
-      "description": "Identity of this pattern.",
+      "description": "Identity of this named journey.",
       "required": ["name", "id", "scope", "description"],
       "additionalProperties": false,
       "properties": {
         "name": {
           "type": "string",
-          "description": "Human-readable pattern name (e.g. 'Checkout Flow')."
+          "description": "Human-readable journey name (e.g. 'Checkout Flow')."
         },
         "id": {
           "type": "string",
           "pattern": "^[a-z][a-z0-9-]*$",
-          "description": "Unique kebab-case identifier for this pattern (e.g. 'checkout-flow')."
+          "description": "Unique kebab-case identifier for this journey (e.g. 'checkout-flow')."
         },
         "scope": {
           "type": "string",
@@ -33,16 +33,16 @@
         },
         "category": {
           "type": "string",
-          "description": "Domain this pattern belongs to (e.g. 'e-commerce', 'onboarding')."
+          "description": "Domain this journey belongs to (e.g. 'e-commerce', 'onboarding')."
         },
         "extends": {
           "type": "array",
           "items": { "type": "string" },
-          "description": "Class families this pattern inherits laws from (e.g. ['flow']). The generator unions this pattern's keywords onto the inherited class laws' triggers."
+          "description": "Always ['journey'] today — opts this journey into the generic journey-tier laws. The generator unions this journey's keywords onto those laws' triggers."
         },
         "description": {
           "type": "string",
-          "description": "What this pattern represents and why it needs flow-level governance."
+          "description": "What this journey represents and why it needs journey-level governance."
         }
       }
     },
@@ -69,26 +69,26 @@
           },
           "isFinalStep": {
             "type": "boolean",
-            "description": "True for the terminal step of the flow."
+            "description": "True for the terminal step of the journey."
           }
         }
       }
     },
     "laws": {
       "type": "array",
-      "description": "The pattern's governance laws — each a citable rule, validated holistically against the full composition of a step.",
+      "description": "The journey's governance laws — each a citable rule, validated holistically against the full composition of a step.",
       "minItems": 1,
       "items": { "$ref": "#/definitions/law" }
     },
     "aiHints": {
       "type": "object",
-      "description": "Hints for AI agents consuming this pattern.",
+      "description": "Hints for AI agents consuming this journey.",
       "additionalProperties": false,
       "properties": {
         "keywords": {
           "type": "array",
           "items": { "type": "string" },
-          "description": "Terms that trigger this pattern's laws during intent matching. Become the laws' triggers in the generated index."
+          "description": "Terms that trigger this journey's laws during intent matching. Become the laws' triggers in the generated index."
         },
         "notes": {
           "type": "string",
@@ -121,7 +121,7 @@
         "refines": {
           "type": "string",
           "pattern": "^[A-Z]{2,6}-[0-9]+$",
-          "description": "Id of a class law this law supersedes (lex specialis). Where both apply, this one wins and the class law is suppressed."
+          "description": "Id of a generic journey law this law supersedes (lex specialis). Where both apply, this one wins and the generic law is suppressed."
         },
         "statement": {
           "type": "string",
@@ -134,7 +134,7 @@
         "severity": { "$ref": "#/definitions/severity" },
         "appliesWhen": {
           "type": "object",
-          "description": "The trigger / jurisdiction. Common keys: pattern, patternClass, step, scope, always.",
+          "description": "The trigger / jurisdiction. Common keys: journey, step, scope, always.",
           "additionalProperties": true
         },
         "note": {
