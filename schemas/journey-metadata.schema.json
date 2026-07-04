@@ -1,39 +1,34 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "class-metadata.schema.json",
-  "title": "Class Metadata",
-  "description": "Schema for class-level governance laws — laws shared by a family of patterns (e.g. all multi-step flows). A pattern opts in with pattern.extends; a pattern law can supersede a class law via refines (lex specialis).",
+  "$id": "journey-metadata.schema.json",
+  "title": "Journey Metadata",
+  "description": "Schema for the generic journey-tier governance laws — laws shared by every multi-step journey (checkout, onboarding, wizards). A named journey opts in with journey.extends: [journey]; a named-journey law can supersede a generic journey law via refines (lex specialis).",
   "type": "object",
-  "required": ["class", "scope", "laws"],
+  "required": ["scope", "laws"],
   "additionalProperties": false,
   "properties": {
     "$schema": {
       "type": "string",
       "description": "Path to this JSON Schema for IDE validation and autocomplete."
     },
-    "class": {
-      "type": "string",
-      "pattern": "^[a-z][a-z0-9-]*$",
-      "description": "Class family name, referenced by a pattern's `extends` (e.g. 'flow')."
-    },
     "scope": {
       "type": "string",
       "pattern": "^[A-Z]{2,6}$",
-      "description": "Scope code that prefixes every law id in this file (e.g. 'FLOW')."
+      "description": "Scope code that prefixes every law id in this file (e.g. 'JRN')."
     },
     "tier": {
       "type": "string",
-      "const": "class",
-      "description": "Always 'class' (optional; documentation only)."
+      "const": "journey",
+      "description": "Always 'journey' (optional; documentation only)."
     },
     "description": {
       "type": "string",
-      "description": "What this family is and what its shared laws govern."
+      "description": "What a journey is and what its shared laws govern."
     },
     "triggers": {
       "type": "array",
       "items": { "type": "string" },
-      "description": "Base keywords that resolve these laws for any task of this family. The generator also unions in the keywords of every pattern that extends this class."
+      "description": "Base keywords that resolve these laws for any journey-shaped task. The generator also unions in the keywords of every named journey that extends this tier."
     },
     "laws": {
       "type": "array",
@@ -50,7 +45,7 @@
         "id": {
           "type": "string",
           "pattern": "^[A-Z]{2,6}-[0-9]+$",
-          "description": "Authored, stable law citation (e.g. 'FLOW-1')."
+          "description": "Authored, stable law citation (e.g. 'JRN-1')."
         },
         "title": { "type": "string", "description": "Short human sentence naming the law." },
         "statement": { "type": "string", "description": "The binding text of the law." },
@@ -58,11 +53,11 @@
         "severity": {
           "type": "string",
           "enum": ["error", "warning", "info"],
-          "description": "How hard the law pushes back. A pattern may refine this to a stricter severity."
+          "description": "How hard the law pushes back. A named journey may refine this to a stricter severity."
         },
         "appliesWhen": {
           "type": "object",
-          "description": "The trigger / jurisdiction. Common keys: patternClass, scope, step.",
+          "description": "The trigger / jurisdiction. Common keys: scope, step.",
           "additionalProperties": true
         },
         "note": { "type": "string", "description": "Authoring note." }
