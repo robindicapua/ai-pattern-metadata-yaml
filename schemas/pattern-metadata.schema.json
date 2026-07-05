@@ -136,6 +136,11 @@
           "type": "array",
           "description": "The same law applied to specific zones (the decimal citation, e.g. CRD-1.1).",
           "items": { "$ref": "#/definitions/provision" }
+        },
+        "status": {
+          "type": "string",
+          "enum": ["repealed"],
+          "description": "Mark a law repealed: it stays in the authored YAML (its citation is retired, never reused) but is dropped from the generated governance index."
         }
       }
     },

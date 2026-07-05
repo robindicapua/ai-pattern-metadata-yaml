@@ -60,7 +60,12 @@
           "description": "The trigger / jurisdiction. Common keys: scope, step.",
           "additionalProperties": true
         },
-        "note": { "type": "string", "description": "Authoring note." }
+        "note": { "type": "string", "description": "Authoring note." },
+        "status": {
+          "type": "string",
+          "enum": ["repealed"],
+          "description": "Mark a law repealed: it stays in the authored YAML (its citation is retired, never reused) but is dropped from the generated governance index."
+        }
       }
     }
   }
