@@ -1,49 +1,52 @@
 ---
 name: ai-pattern-metadata-yaml
-version: 2.0.0
+version: 3.0.0
 author: Robin Di Capua
-based_on: "ai-component-metadata-yaml by Robin Di Capua — split out so journey/pattern governance laws have their own workflow instead of stretching the single-component schema"
+based_on: "ai-component-metadata-yaml by Robin Di Capua — split out so journey/pattern governance rules have their own workflow instead of stretching the single-component schema"
 license: MIT
-description: Generate governance-shaped metadata for named journeys (multi-step flows, wizards), the generic journey-tier laws they share, and single-page patterns (e.g. a card) as YAML files, validated against JSON Schema. Unlike component metadata (mostly descriptive hints), journey/pattern metadata is laws-first — citable, severity-ranked composition rules spanning multiple steps/zones and components.
+description: Generate governance rules for named journeys (multi-step flows, wizards), the generic journey-tier rules they share, and single-page patterns (e.g. a card) as YAML files, validated against JSON Schema. Unlike component specs (descriptive), journey/pattern files are rules-first — citable, severity-ranked composition rules spanning multiple steps/zones and components.
 ---
 
-**Version:** 2.0.0
-**Last Updated:** 2026-07-03
+**Version:** 3.0.0
+**Last Updated:** 2026-07-15
 
-# AI Pattern Metadata Generator (YAML)
+# AI Pattern Governance Generator (YAML)
 
-Generate structured governance laws as three kinds of file:
+Generate structured governance rules as three kinds of file:
 
-- **`journey.yaml`** — the single generic file of laws shared by every
-  multi-step journey (e.g. "one forward action per step"). There is exactly
-  one of these in a project.
-- **`.journey.yaml`** — one per named, multi-step journey (e.g. a checkout
-  flow), inheriting the generic journey laws via `journey.extends` and
-  optionally tightening one via `refines`.
-- **`.pattern.yaml`** — one per named, single-page pattern (e.g. a card),
-  governing composition within named **zones** on that one surface. Patterns
-  don't inherit from a shared family.
+- **`journey.governance.yaml`** — the single generic file of rules shared by
+  every multi-step journey (e.g. "one forward action per step"). There is
+  exactly one of these in a project, in the `governance/` folder.
+- **`<journey-id>.governance.yaml`** — one per named, multi-step journey
+  (e.g. a checkout flow), in `journeys/<journey-id>/`, inheriting the generic
+  journey rules via `journey.extends` and optionally tightening one via
+  `refines`.
+- **`<pattern-id>.governance.yaml`** — one per named, single-page pattern
+  (e.g. a card), in `patterns/<pattern-id>/`, governing composition within
+  named **zones** on that one surface. Patterns don't inherit from a shared
+  family.
 
 All three are validated via JSON Schema through the `yaml-language-server`
 comment, same mechanism as the sibling
 [ai-component-metadata-yaml](https://github.com/robindicapua/ai-component-metadata-yaml)
 skill.
 
-## How this differs from component metadata
+## How this differs from component specs
 
-Component metadata (`ai-component-metadata-yaml`) is **hints-first**: mostly
-descriptive fields (`usage`, `behavior`, `accessibility`, `variants`) for a
-single artifact, with a couple of governance fields (`antiPatterns`,
-`parentConstraints`) bolted on.
+The sibling skill (`ai-component-metadata-yaml`) splits a component's context
+into a **descriptive spec** (`<component>.spec.yaml` — API, variants, a11y,
+examples) and a **normative governance file** (`<component>.governance.yaml` —
+anti-patterns and parent constraints for that one component). A spec
+describes, governance prescribes.
 
-Journey and pattern metadata are the inverse — **laws-first**: the bulk of the
-file is `laws[]`, each a citable, severity-ranked rule about how components
-compose *across* the steps of a journey, or *within a zone* of a pattern. No
-single component's metadata can express "the confirmation step must show a
-`success`-variant CTA, not `primary`" or "the card footer holds at most two
-buttons" — those constraints only exist at the level of the whole journey step
-or pattern zone. `aiHints` here is a thin tail (keywords only), not a parallel
-section to `usage`/`behavior`/`variants`.
+Journey and pattern files are **rules-first and governance-only**: the bulk of
+the file is `rules[]`, each a citable, severity-ranked rule about how
+components compose *across* the steps of a journey, or *within a zone* of a
+pattern. No single component's governance file can express "the confirmation
+step must show a `success`-variant CTA, not `primary`" or "the card footer
+holds at most two buttons" — those constraints only exist at the level of the
+whole journey step or pattern zone. `aiHints` here is a thin tail (keywords
+only), not a parallel section to `usage`/`behavior`/`variants`.
 
 If what you're generating is scoped to one component, use
 `ai-component-metadata-yaml` instead. If it spans multiple steps/components in
@@ -53,9 +56,9 @@ single-page composition, use this skill.
 ## Where files live
 
 ```
-packages/ui/src/governance/journey.yaml                     # generic journey laws (JRN-*)
-packages/ui/src/journeys/<journey-id>/<journey-id>.journey.yaml   # one named journey (e.g. CHK-*)
-packages/ui/src/patterns/<pattern-id>/<pattern-id>.pattern.yaml   # one named pattern (e.g. CRD-*)
+packages/ui/src/governance/journey.governance.yaml                     # generic journey rules (JRN-*)
+packages/ui/src/journeys/<journey-id>/<journey-id>.governance.yaml    # one named journey (e.g. CHK-*)
+packages/ui/src/patterns/<pattern-id>/<pattern-id>.governance.yaml    # one named pattern (e.g. CRD-*)
 ```
 
 All three are **authored source of truth** — compiled by
@@ -63,19 +66,19 @@ All three are **authored source of truth** — compiled by
 `.ai/governance/index.toon`. Never edit the generated index by hand; edit the
 YAML and re-run the sync.
 
-See `packages/ui/src/governance/SPEC.md` for the full governance model (tiers,
-citation format, `refines`/`extends` semantics).
+See `packages/ui/src/governance/MODEL.md` for the full governance model
+(tiers, citation format, `refines`/`extends` semantics).
 
 ## Quick start — new named journey
 
 ```yaml
-# yaml-language-server: $schema=../../../../../.agent/skills/ai-pattern-metadata-yaml/schemas/journey-instance-metadata.schema.json
+# yaml-language-server: $schema=../../../../../.agent/skills/ai-pattern-metadata-yaml/schemas/journey-instance-governance.schema.json
 journey:
   name: Human Readable Name
   id: kebab-case-id
-  scope: ABC              # 2-6 uppercase letters, prefixes every law id (ABC-1, ABC-2...)
+  scope: ABC              # 2-6 uppercase letters, prefixes every rule id (ABC-1, ABC-2...)
   category: domain-name
-  extends: [journey]      # always [journey] today — inherits the generic JRN-* laws
+  extends: [journey]      # always [journey] today — inherits the generic JRN-* rules
   description: >
     What this journey represents and why it needs journey-level governance.
 
@@ -88,9 +91,9 @@ steps:
     description: ...
     isFinalStep: true
 
-laws:
+rules:
   - id: ABC-1
-    title: Short human sentence naming the law
+    title: Short human sentence naming the rule
     statement: >
       The binding rule text.
     rationale: >
@@ -107,13 +110,13 @@ laws:
 aiHints:
   keywords: [domain, terms, that, trigger, this, journey]
   notes: >
-    Guidance for AI agents on how to apply these laws holistically.
+    Guidance for AI agents on how to apply these rules holistically.
 ```
 
 ## Quick start — new pattern (single-page composition)
 
 ```yaml
-# yaml-language-server: $schema=../../../../../.agent/skills/ai-pattern-metadata-yaml/schemas/pattern-metadata.schema.json
+# yaml-language-server: $schema=../../../../../.agent/skills/ai-pattern-metadata-yaml/schemas/pattern-governance.schema.json
 pattern:
   name: Human Readable Name
   id: kebab-case-id
@@ -128,9 +131,9 @@ zones:
     name: Zone One
     description: What this zone holds.
 
-laws:
+rules:
   - id: ABC-1
-    title: Short human sentence naming the law
+    title: Short human sentence naming the rule
     statement: >
       The binding rule text.
     rationale: >
@@ -146,29 +149,30 @@ laws:
 aiHints:
   keywords: [domain, terms, that, trigger, this, pattern]
   notes: >
-    Guidance for AI agents on how to apply these laws holistically.
+    Guidance for AI agents on how to apply these rules holistically.
 ```
 
-## Quick start — editing the generic journey laws
+## Quick start — editing the generic journey rules
 
-There is exactly one of these files per project — `governance/journey.yaml`.
-Only add to it when a rule genuinely applies to *every* journey, not just one:
+There is exactly one of these files per project —
+`governance/journey.governance.yaml`. Only add to it when a rule genuinely
+applies to *every* journey, not just one:
 
 ```yaml
-# yaml-language-server: $schema=../../../../../.agent/skills/ai-pattern-metadata-yaml/schemas/journey-metadata.schema.json
+# yaml-language-server: $schema=../../../../../.agent/skills/ai-pattern-metadata-yaml/schemas/journey-governance.schema.json
 scope: JRN
 tier: journey
 
 description: >
-  Laws shared by every multi-step journey.
+  Governance rules shared by every multi-step journey.
 
 triggers:
   - keyword-one
   - keyword-two
 
-laws:
+rules:
   - id: JRN-4
-    title: Short human sentence naming the law
+    title: Short human sentence naming the rule
     statement: >
       The binding rule text.
     rationale: >
@@ -183,14 +187,14 @@ laws:
 ### 1. Decide what you're authoring
 
 - **A brand-new named journey** (a multi-step flow that doesn't have a
-  `.journey.yaml` yet) → go to [New journey](#2-new-journey).
+  governance file yet) → go to [New journey](#2-new-journey).
 - **A brand-new pattern** (a single-page composition that doesn't have a
-  `.pattern.yaml` yet) → go to [New pattern](#3-new-pattern).
+  governance file yet) → go to [New pattern](#3-new-pattern).
 - **A rule that should apply to every journey** → edit
-  `governance/journey.yaml` directly (see the quick start above) — there's
-  only one such file; don't create a second.
-- **Adding a law to an existing journey or pattern** → go to
-  [Adding a law](#4-adding-a-law-to-an-existing-journey-or-pattern).
+  `governance/journey.governance.yaml` directly (see the quick start above) —
+  there's only one such file; don't create a second.
+- **Adding a rule to an existing journey or pattern** → go to
+  [Adding a rule](#4-adding-a-rule-to-an-existing-journey-or-pattern).
 
 ### 2. New journey
 
@@ -199,22 +203,22 @@ laws:
    `id` in `steps[]`. Mark the terminal step `isFinalStep: true`.
 2. Pick a `scope` code (2-6 uppercase letters) that doesn't collide with an
    existing journey's or pattern's scope — check
-   `packages/ui/src/journeys/*/*.journey.yaml` and
-   `packages/ui/src/patterns/*/*.pattern.yaml` for scopes already in use.
+   `packages/ui/src/journeys/*/*.governance.yaml` and
+   `packages/ui/src/patterns/*/*.governance.yaml` for scopes already in use.
 3. Set `extends: [journey]` — every named journey inherits the generic
-   journey laws in `governance/journey.yaml`. There's only one generic file;
-   this is always the same value.
+   journey rules in `governance/journey.governance.yaml`. There's only one
+   generic file; this is always the same value.
 4. Walk each step and ask: what component/variant must be present, forbidden,
    or capped, across the *whole* step's composition (not one component's
-   props)? Draft a law per distinct rule, with `provisions[]` pointing at the
-   steps it applies to.
-5. If a law you're drafting would hold for *any* journey, not just this one,
-   it belongs in `governance/journey.yaml` instead, and this journey should
-   rely on inheritance rather than repeating it. If you're not sure yet (e.g.
-   this is the only journey that needs it so far), draft it here and add a
-   `note:` flagging it as a promotion candidate once a second journey needs
-   the same rule — this mirrors the existing `CHK-3` note in
-   `checkout-flow.journey.yaml`.
+   props)? Draft a rule per distinct constraint, with `provisions[]` pointing
+   at the steps it applies to.
+5. If a rule you're drafting would hold for *any* journey, not just this one,
+   it belongs in `governance/journey.governance.yaml` instead, and this
+   journey should rely on inheritance rather than repeating it. If you're not
+   sure yet (e.g. this is the only journey that needs it so far), draft it
+   here and add a `note:` flagging it as a promotion candidate once a second
+   journey needs the same rule — this mirrors the existing `CHK-3` note in
+   `checkout-flow.governance.yaml`.
 6. Add the thin `aiHints` tail (keywords only — do not try to add
    `behavior`/`accessibility`/`variants` sections; those don't map to a whole
    journey and the schema doesn't have them).
@@ -227,60 +231,60 @@ laws:
    `zones[]`.
 2. Pick a `scope` code (2-6 uppercase letters) that doesn't collide with an
    existing journey's or pattern's scope — check
-   `packages/ui/src/journeys/*/*.journey.yaml` and
-   `packages/ui/src/patterns/*/*.pattern.yaml` for scopes already in use.
+   `packages/ui/src/journeys/*/*.governance.yaml` and
+   `packages/ui/src/patterns/*/*.governance.yaml` for scopes already in use.
 3. Patterns don't inherit from a shared family — there's no `extends` for
-   patterns today. Each pattern owns its laws outright.
+   patterns today. Each pattern owns its rules outright.
 4. Walk each zone and ask: what component/variant must be present, forbidden,
    or capped, across the *whole* zone's composition (not one component's
-   props)? Draft a law per distinct rule, with `provisions[]` pointing at the
-   zones it applies to. Use `constraint.min`/`.max` for bounded counts (e.g.
-   `max: 2`) — patterns don't use the journey tier's fixed `quantity` enum,
-   since that enum can't express arbitrary counts like "two".
+   props)? Draft a rule per distinct constraint, with `provisions[]` pointing
+   at the zones it applies to. Use `constraint.min`/`.max` for bounded counts
+   (e.g. `max: 2`) — patterns don't use the journey tier's fixed `quantity`
+   enum, since that enum can't express arbitrary counts like "two".
 5. Add the thin `aiHints` tail (keywords only — do not try to add
    `behavior`/`accessibility`/`variants` sections; those don't map to a whole
    pattern and the schema doesn't have them).
 6. Run `npm run sync:governance` and confirm it completes without error.
 
-### 4. Adding a law to an existing journey or pattern
+### 4. Adding a rule to an existing journey or pattern
 
 This is the common case once journeys/patterns already exist — e.g. "add a
 rule that the payment step must show a security badge."
 
 1. **Locate the file.** Named journeys live at
-   `packages/ui/src/journeys/<journey-id>/<journey-id>.journey.yaml` (find by
-   `journey.id` or `journey.name`, not folder guessing — `grep -r "id: <name>"
-   packages/ui/src/journeys/`). Patterns live at
-   `packages/ui/src/patterns/<pattern-id>/<pattern-id>.pattern.yaml`. The
-   generic journey laws live at the single file
-   `packages/ui/src/governance/journey.yaml`.
-2. **Determine the next law id.** Read the file's `journey.scope` /
+   `packages/ui/src/journeys/<journey-id>/<journey-id>.governance.yaml` (find
+   by `journey.id` or `journey.name`, not folder guessing — `grep -r "id:
+   <name>" packages/ui/src/journeys/`). Patterns live at
+   `packages/ui/src/patterns/<pattern-id>/<pattern-id>.governance.yaml`. The
+   generic journey rules live at the single file
+   `packages/ui/src/governance/journey.governance.yaml`.
+2. **Determine the next rule id.** Read the file's `journey.scope` /
    `pattern.scope` (or `scope` for the generic journey file), scan every
-   existing `laws[].id` for that prefix, and use the next unused integer.
+   existing `rules[].id` for that prefix, and use the next unused integer.
    Never reuse a retired id.
-3. **Check for an existing generic journey law with the same intent** (named
+3. **Check for an existing generic journey rule with the same intent** (named
    journeys only — patterns have no generic layer to check). If one exists
    and this journey needs a stricter/more specific version, set
-   `refines: <id>` on the new law instead of duplicating its statement — the
-   named-journey law then supersedes the generic one wherever both would
+   `refines: <id>` on the new rule instead of duplicating its statement — the
+   named-journey rule then supersedes the generic one wherever both would
    apply (lex specialis; see `CHK-1` refining `JRN-1` in
-   `checkout-flow.journey.yaml`).
-4. **Author the law body**: `title`, `statement`, `rationale`, `severity`
+   `checkout-flow.governance.yaml`).
+4. **Author the rule body**: `title`, `statement`, `rationale`, `severity`
    (`error`/`warning`/`info`), `appliesWhen`. Add `note:` only if there's a
    genuine authoring caveat (e.g. a future-promotion reminder) — omit
    otherwise.
 5. **Add provisions.** Named journeys: each provision gets id
-   `<law-id>.<n>` (e.g. `CHK-4.1`), a `step` id from the journey's `steps[]`,
+   `<rule-id>.<n>` (e.g. `CHK-4.1`), a `step` id from the journey's `steps[]`,
    and a `constraint` (`type: required|forbidden`, `component`, optional
    `variant`, optional `quantity`). Patterns: each provision gets id
-   `<law-id>.<n>` (e.g. `CRD-2.1`), a `zone` id from the pattern's `zones[]`,
+   `<rule-id>.<n>` (e.g. `CRD-2.1`), a `zone` id from the pattern's `zones[]`,
    and a `constraint` (`type: required|forbidden|limit`, `component`,
    optional `variant`, optional `min`/`max`). The generic journey file has no
-   per-step provisions in this schema — a generic law's `appliesWhen.scope`
+   per-step provisions in this schema — a generic rule's `appliesWhen.scope`
    covers all steps of every inheriting journey generically.
 6. **Re-run `npm run sync:governance`** and check the diff to
    `.ai/governance/index.toon` looks like what you intended — one new row per
-   law/provision, `source` pointing back at the file you just edited.
+   rule/provision, `source` pointing back at the file you just edited.
 
 ### 5. Validate
 
@@ -288,61 +292,61 @@ rule that the payment step must show a security badge."
   the Red Hat YAML extension).
 - CLI validation (requires `js-yaml` + `ajv`):
   ```bash
-  npx js-yaml path/to/file.journey.yaml | npx ajv validate \
-    -s .agent/skills/ai-pattern-metadata-yaml/schemas/journey-instance-metadata.schema.json \
+  npx js-yaml path/to/checkout-flow.governance.yaml | npx ajv validate \
+    -s .agent/skills/ai-pattern-metadata-yaml/schemas/journey-instance-governance.schema.json \
     -d /dev/stdin
   ```
-  Swap the schema/file pair for `pattern-metadata.schema.json`/`.pattern.yaml`
-  when validating a pattern file, or `journey-metadata.schema.json`/
-  `journey.yaml` when validating the generic journey file.
+  Swap the schema for `pattern-governance.schema.json` when validating a
+  pattern file, or `journey-governance.schema.json` when validating the
+  generic journey file.
 
 ## Schema reference
 
-### `journey-metadata.schema.json` — required: `scope`, `laws`
+### `journey-governance.schema.json` — required: `scope`, `rules`
 
 | Field | Required | Purpose |
 |---|---|---|
-| `scope` | Yes | Law-id prefix for the generic journey laws (`JRN`) |
+| `scope` | Yes | Rule-id prefix for the generic journey rules (`JRN`) |
 | `tier` | No | Always `"journey"` if present — documentation only |
 | `description`, `triggers[]` | No | What a journey is + base intent-matching keywords |
-| `laws[]` | Yes | Same shape as named-journey laws, minus `provisions` (generic journey laws apply generically via `appliesWhen.scope`, not per-step) |
+| `rules[]` | Yes | Same shape as named-journey rules, minus `provisions` (generic journey rules apply generically via `appliesWhen.scope`, not per-step) |
 
-### `journey-instance-metadata.schema.json` — required: `journey`, `laws`
+### `journey-instance-governance.schema.json` — required: `journey`, `rules`
 
 | Field | Required | Purpose |
 |---|---|---|
-| `journey.name`, `.id`, `.scope`, `.description` | Yes | Identity + the law-id prefix |
+| `journey.name`, `.id`, `.scope`, `.description` | Yes | Identity + the rule-id prefix |
 | `journey.category`, `.extends` | No | Domain grouping; always `[journey]` when present |
 | `steps[]` | No* | Ordered step ids/names, referenced by provisions for human-readable labels (*omit only if the journey has no per-step provisions*) |
-| `laws[]` | Yes | `id`, `title`, `statement`, `severity` required; `rationale`, `refines`, `appliesWhen`, `note`, `provisions[]` optional |
-| `laws[].provisions[]` | No | `id`, `step`, `constraint` required; `labelHint` optional |
+| `rules[]` | Yes | `id`, `title`, `statement`, `severity` required; `rationale`, `refines`, `appliesWhen`, `note`, `provisions[]` optional |
+| `rules[].provisions[]` | No | `id`, `step`, `constraint` required; `labelHint` optional |
 | `aiHints.keywords`, `.notes` | No | Intent-matching terms + holistic-validation guidance |
 
-### `pattern-metadata.schema.json` — required: `pattern`, `laws`
+### `pattern-governance.schema.json` — required: `pattern`, `rules`
 
 | Field | Required | Purpose |
 |---|---|---|
-| `pattern.name`, `.id`, `.scope`, `.description` | Yes | Identity + the law-id prefix |
+| `pattern.name`, `.id`, `.scope`, `.description` | Yes | Identity + the rule-id prefix |
 | `pattern.category` | No | Domain grouping |
 | `zones[]` | No* | Named region ids/names, referenced by provisions for human-readable labels (*omit only if the pattern has no per-zone provisions*) |
-| `laws[]` | Yes | `id`, `title`, `statement`, `severity` required; `rationale`, `refines`, `appliesWhen`, `note`, `provisions[]` optional |
-| `laws[].provisions[]` | No | `id`, `zone`, `constraint` required; `labelHint` optional |
+| `rules[]` | Yes | `id`, `title`, `statement`, `severity` required; `rationale`, `refines`, `appliesWhen`, `note`, `provisions[]` optional |
+| `rules[].provisions[]` | No | `id`, `zone`, `constraint` required; `labelHint` optional |
 | `aiHints.keywords`, `.notes` | No | Intent-matching terms + holistic-validation guidance |
 
 ## Severity
 
-Per-law, not file-wide — there is no journey- or pattern-level enforcement
+Per-rule, not file-wide — there is no journey- or pattern-level enforcement
 knob. `error` = hard block, `warning` = flagged for review, `info` = advisory.
-A named-journey law that `refines` a generic journey law may tighten (but not
-loosen) its severity.
+A named-journey rule that `refines` a generic journey rule may tighten (but
+not loosen) its severity.
 
-## Law id conventions
+## Rule id conventions
 
 - Scope codes are 2-6 uppercase letters, unique across every journey and
   pattern file in the repo (and the single generic journey file).
-- Law ids are `<SCOPE>-<n>` (e.g. `CHK-1`), never reused once retired.
-- Provision ids are `<law-id>.<n>` (e.g. `CHK-1.3`, `CRD-1.1`), one per
-  step/zone the law reaches.
+- Rule ids are `<SCOPE>-<n>` (e.g. `CHK-1`), never reused once retired.
+- Provision ids are `<rule-id>.<n>` (e.g. `CHK-1.3`, `CRD-1.1`), one per
+  step/zone the rule reaches.
 
 ## YAML quoting rules
 
@@ -352,17 +356,18 @@ names) don't need quotes.
 
 ## Best practices
 
-1. **Laws are the content, not a bolt-on.** Don't pad a journey or pattern
-   file with `usage`/`behavior`-style sections copied from component
-   metadata — they don't exist in these schemas and don't apply at
-   journey/pattern scope.
-2. **Push shared rules up, not down.** If a law you're drafting for a named
+1. **Rules are the content, not a bolt-on.** Don't pad a journey or pattern
+   file with `usage`/`behavior`-style sections copied from component specs —
+   they don't exist in these schemas and don't apply at journey/pattern
+   scope.
+2. **Push shared rules up, not down.** If a rule you're drafting for a named
    journey would hold for any journey, that's a signal to move it to
-   `governance/journey.yaml` and have every journey inherit it, rather than
-   keeping copies in sync by hand. Patterns have no such shared layer today.
-3. **Cite, don't restate.** When a named-journey law refines a generic
-   journey law, reference it via `refines` — don't copy the generic law's
+   `governance/journey.governance.yaml` and have every journey inherit it,
+   rather than keeping copies in sync by hand. Patterns have no such shared
+   layer today.
+3. **Cite, don't restate.** When a named-journey rule refines a generic
+   journey rule, reference it via `refines` — don't copy the generic rule's
    statement into the journey file.
 4. **Always re-run the sync.** `npm run sync:governance` is what actually
-   makes a new law enforceable; an unsyncd `.journey.yaml`/`.pattern.yaml`
-   edit is invisible to the governance index and to CI.
+   makes a new rule enforceable; an unsyncd governance-file edit is invisible
+   to the governance index and to CI.

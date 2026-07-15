@@ -1,15 +1,16 @@
-# AI Pattern Metadata (YAML) — Claude Code Skill
+# AI Pattern Governance (YAML) — Claude Code Skill
 
-A [Claude Code](https://claude.ai/code) skill that generates governance-shaped
-metadata for named journeys (multi-step flows, wizards), the generic
-journey-tier laws they share, and single-page patterns (e.g. a card).
-Metadata is written as `journey.yaml` (generic), `.journey.yaml` (named), and
-`.pattern.yaml` (single-page) files, validated against JSON Schema.
+A [Claude Code](https://claude.ai/code) skill that generates governance rules
+for named journeys (multi-step flows, wizards), the generic journey-tier rules
+they share, and single-page patterns (e.g. a card). Rules are written as
+`journey.governance.yaml` (generic), `<journey-id>.governance.yaml` (named),
+and `<pattern-id>.governance.yaml` (single-page) files, validated against
+JSON Schema.
 
 **Split out from** [ai-component-metadata-yaml](https://github.com/robindicapua/ai-component-metadata-yaml),
-which generates metadata for individual components. Component metadata is
-mostly descriptive (props, variants, accessibility); journey/pattern metadata
-is mostly prescriptive (composition laws that only make sense across multiple
+which generates specs and governance for individual components. A component
+spec is descriptive (props, variants, accessibility); journey/pattern files
+are prescriptive (composition rules that only make sense across multiple
 steps/components, or within one composition's zones) — different enough
 content models to warrant their own skill rather than one schema trying to
 cover both.
@@ -18,11 +19,11 @@ cover both.
 
 ## What it does
 
-When you ask Claude to generate or update journey/pattern metadata, this
-skill instructs it to produce or edit a `.journey.yaml` file (one per named
-journey), the single `journey.yaml` file (generic, shared laws), or a
-`.pattern.yaml` file (one per single-page pattern). Those files tell AI agents
-and the governance pipeline:
+When you ask Claude to generate or update journey/pattern governance, this
+skill instructs it to produce or edit a named journey's governance file (one
+per journey), the single generic `journey.governance.yaml` (shared rules), or
+a pattern's governance file (one per single-page pattern). Those files tell AI
+agents and the governance pipeline:
 
 - **What composition is required, forbidden, or capped** at each step of a
   journey (e.g. "the confirmation step must show exactly one `success`-variant
@@ -32,21 +33,21 @@ and the governance pipeline:
   back affordance after the first step), inherited via `journey.extends`
 - **Which named-journey rule supersedes a shared one** (`refines`, lex
   specialis)
-- **How severe** each rule is (`error` / `warning` / `info`), authored per law
+- **How severe** each rule is (`error` / `warning` / `info`), authored per rule
 
-It does **not** cover single-component descriptive metadata (use cases, props,
-accessibility, variants) — that's `ai-component-metadata-yaml`'s job.
+It does **not** cover single-component context (specs or component-tier
+rules) — that's `ai-component-metadata-yaml`'s job.
 
 ---
 
-## Why a separate skill from component metadata?
+## Why a separate skill from component specs?
 
-| | Component metadata | Journey/pattern metadata |
+| | Component spec + governance | Journey/pattern governance |
 |---|---|---|
-| Primary content | Descriptive hints (`usage`, `behavior`, `accessibility`, `variants`) | Prescriptive laws (`laws[]`, `provisions[]`) |
+| Primary content | Descriptive spec (`usage`, `behavior`, `accessibility`, `variants`) + per-component rules | Prescriptive composition rules (`rules[]`, `provisions[]`) |
 | Scope | One component | Multiple steps/components (journey), or one zoned surface (pattern) |
 | `aiHints` | A parallel section alongside several others | A thin tail (keywords only) |
-| Consumed by | AI generation guidance | AI generation guidance **and** the governance sync pipeline (`.ai/governance/index.toon`) |
+| Consumed by | AI generation guidance + the governance sync pipeline | AI generation guidance **and** the governance sync pipeline (`.ai/governance/index.toon`) |
 
 Trying to force both into one schema either bloats the component schema with
 fields that don't apply to a single artifact, or leaves the journey/pattern
@@ -72,14 +73,14 @@ skills so agents know to check it before journey/pattern/governance work.
 ```json
 {
   "yaml.schemas": {
-    ".agent/skills/ai-pattern-metadata-yaml/schemas/journey-metadata.schema.json": [
-      "packages/ui/src/governance/journey.yaml"
+    ".agent/skills/ai-pattern-metadata-yaml/schemas/journey-governance.schema.json": [
+      "packages/ui/src/governance/journey.governance.yaml"
     ],
-    ".agent/skills/ai-pattern-metadata-yaml/schemas/journey-instance-metadata.schema.json": [
-      "**/*.journey.yaml"
+    ".agent/skills/ai-pattern-metadata-yaml/schemas/journey-instance-governance.schema.json": [
+      "packages/ui/src/journeys/**/*.governance.yaml"
     ],
-    ".agent/skills/ai-pattern-metadata-yaml/schemas/pattern-metadata.schema.json": [
-      "**/*.pattern.yaml"
+    ".agent/skills/ai-pattern-metadata-yaml/schemas/pattern-governance.schema.json": [
+      "packages/ui/src/patterns/**/*.governance.yaml"
     ]
   }
 }
@@ -90,18 +91,17 @@ skills so agents know to check it before journey/pattern/governance work.
 ## Usage
 
 ```
-Add a law to the checkout-flow journey: the payment step must show a security badge.
+Add a rule to the checkout-flow journey: the payment step must show a security badge.
 ```
 
 ```
 Create a new pattern for a filter bar.
 ```
 
-Claude will locate the right `journey.yaml`/`.journey.yaml`/`.pattern.yaml`
-file (or scaffold a new one), assign the next law id for that scope, and
-validate against the schema. See `SKILL.md` for the full workflow, including
-how it decides between editing an existing journey, editing a pattern, or
-editing the generic journey laws.
+Claude will locate the right governance file (or scaffold a new one), assign
+the next rule id for that scope, and validate against the schema. See
+`SKILL.md` for the full workflow, including how it decides between editing an
+existing journey, editing a pattern, or editing the generic journey rules.
 
 ---
 
@@ -110,12 +110,12 @@ editing the generic journey laws.
 Three schemas ship with this skill — see `SKILL.md` → "Schema reference" for
 the full field tables.
 
-- **`journey-metadata.schema.json`** — the single file of generic journey
-  laws, inherited by every named journey via `journey.extends: [journey]`.
-- **`journey-instance-metadata.schema.json`** — one named journey's identity,
-  steps, and laws.
-- **`pattern-metadata.schema.json`** — one pattern's identity, zones, and
-  laws. No inheritance — each pattern owns its laws outright.
+- **`journey-governance.schema.json`** — the single file of generic journey
+  rules, inherited by every named journey via `journey.extends: [journey]`.
+- **`journey-instance-governance.schema.json`** — one named journey's
+  identity, steps, and rules.
+- **`pattern-governance.schema.json`** — one pattern's identity, zones, and
+  rules. No inheritance — each pattern owns its rules outright.
 
 ---
 

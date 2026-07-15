@@ -1,10 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "pattern-metadata.schema.json",
-  "title": "Pattern Metadata",
-  "description": "Schema for pattern-tier governance laws — laws for a single-page/single-surface composition (e.g. Card's footer). Unlike journeys, patterns don't inherit from a shared family; each pattern owns its laws outright. Zones replace steps as the unit provisions attach to.",
+  "$id": "pattern-governance.schema.json",
+  "title": "Pattern Governance",
+  "description": "Schema for pattern-tier governance rules — rules for a single-page/single-surface composition (e.g. Card's footer). Unlike journeys, patterns don't inherit from a shared family; each pattern owns its rules outright. Zones replace steps as the unit provisions attach to.",
   "type": "object",
-  "required": ["pattern", "laws"],
+  "required": ["pattern", "rules"],
   "additionalProperties": false,
   "properties": {
     "$schema": {
@@ -29,7 +29,7 @@
         "scope": {
           "type": "string",
           "pattern": "^[A-Z]{2,6}$",
-          "description": "Scope code that prefixes every law id in this file (e.g. 'CRD')."
+          "description": "Scope code that prefixes every rule id in this file (e.g. 'CRD')."
         },
         "category": {
           "type": "string",
@@ -43,7 +43,7 @@
     },
     "zones": {
       "type": "array",
-      "description": "Named regions of the pattern's single surface, referenced by law provisions for human-readable labels.",
+      "description": "Named regions of the pattern's single surface, referenced by rule provisions for human-readable labels.",
       "items": {
         "type": "object",
         "required": ["id", "name"],
@@ -65,11 +65,11 @@
         }
       }
     },
-    "laws": {
+    "rules": {
       "type": "array",
-      "description": "The pattern's governance laws — each a citable rule, validated holistically against the full composition of a zone.",
+      "description": "The pattern's governance rules — each a citable rule, validated holistically against the full composition of a zone.",
       "minItems": 1,
-      "items": { "$ref": "#/definitions/law" }
+      "items": { "$ref": "#/definitions/rule" }
     },
     "aiHints": {
       "type": "object",
@@ -79,11 +79,11 @@
         "keywords": {
           "type": "array",
           "items": { "type": "string" },
-          "description": "Terms that trigger this pattern's laws during intent matching. Become the laws' triggers in the generated index."
+          "description": "Terms that trigger this pattern's rules during intent matching. Become the rules' triggers in the generated index."
         },
         "notes": {
           "type": "string",
-          "description": "Natural language guidance for AI agents on how to apply these laws holistically."
+          "description": "Natural language guidance for AI agents on how to apply these rules holistically."
         }
       }
     }
@@ -92,35 +92,35 @@
     "severity": {
       "type": "string",
       "enum": ["error", "warning", "info"],
-      "description": "How hard the law pushes back. error = hard block; warning = flagged for review; info = advisory."
+      "description": "How hard the rule pushes back. error = hard block; warning = flagged for review; info = advisory."
     },
-    "lawId": {
+    "ruleId": {
       "type": "string",
       "pattern": "^[A-Z]{2,6}-[0-9]+$",
-      "description": "Authored, stable law citation (e.g. 'CRD-1'). Never reused once retired."
+      "description": "Authored, stable rule citation (e.g. 'CRD-1'). Never reused once retired."
     },
-    "law": {
+    "rule": {
       "type": "object",
       "required": ["id", "title", "statement", "severity"],
       "additionalProperties": false,
       "properties": {
-        "id": { "$ref": "#/definitions/lawId" },
+        "id": { "$ref": "#/definitions/ruleId" },
         "title": {
           "type": "string",
-          "description": "Short human sentence naming the law."
+          "description": "Short human sentence naming the rule."
         },
         "refines": {
           "type": "string",
           "pattern": "^[A-Z]{2,6}-[0-9]+$",
-          "description": "Id of another law this law supersedes (lex specialis), if any."
+          "description": "Id of another rule this rule supersedes (lex specialis), if any."
         },
         "statement": {
           "type": "string",
-          "description": "The binding text of the law."
+          "description": "The binding text of the rule."
         },
         "rationale": {
           "type": "string",
-          "description": "Why the law exists — the prose justification."
+          "description": "Why the rule exists — the prose justification."
         },
         "severity": { "$ref": "#/definitions/severity" },
         "appliesWhen": {
@@ -134,13 +134,13 @@
         },
         "provisions": {
           "type": "array",
-          "description": "The same law applied to specific zones (the decimal citation, e.g. CRD-1.1).",
+          "description": "The same rule applied to specific zones (the decimal citation, e.g. CRD-1.1).",
           "items": { "$ref": "#/definitions/provision" }
         },
         "status": {
           "type": "string",
           "enum": ["repealed"],
-          "description": "Mark a law repealed: it stays in the authored YAML (its citation is retired, never reused) but is dropped from the generated governance index."
+          "description": "Mark a rule repealed: it stays in the authored YAML (its citation is retired, never reused) but is dropped from the generated governance index."
         }
       }
     },

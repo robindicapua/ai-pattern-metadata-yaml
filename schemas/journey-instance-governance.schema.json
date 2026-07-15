@@ -1,10 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "journey-instance-metadata.schema.json",
-  "title": "Named Journey Metadata",
-  "description": "Schema for a named journey's governance laws (e.g. Checkout Flow). A named journey owns a scope code and a set of citable laws; each law may have per-step provisions, may inherit the generic journey laws via journey.extends, and may refine (supersede) a generic journey law.",
+  "$id": "journey-instance-governance.schema.json",
+  "title": "Named Journey Governance",
+  "description": "Schema for a named journey's governance rules (e.g. Checkout Flow). A named journey owns a scope code and a set of citable rules; each rule may have per-step provisions, may inherit the generic journey rules via journey.extends, and may refine (supersede) a generic journey rule.",
   "type": "object",
-  "required": ["journey", "laws"],
+  "required": ["journey", "rules"],
   "additionalProperties": false,
   "properties": {
     "$schema": {
@@ -29,7 +29,7 @@
         "scope": {
           "type": "string",
           "pattern": "^[A-Z]{2,6}$",
-          "description": "Scope code that prefixes every law id in this file (e.g. 'CHK')."
+          "description": "Scope code that prefixes every rule id in this file (e.g. 'CHK')."
         },
         "category": {
           "type": "string",
@@ -38,7 +38,7 @@
         "extends": {
           "type": "array",
           "items": { "type": "string" },
-          "description": "Always ['journey'] today — opts this journey into the generic journey-tier laws. The generator unions this journey's keywords onto those laws' triggers."
+          "description": "Always ['journey'] today — opts this journey into the generic journey-tier rules. The generator unions this journey's keywords onto those rules' triggers."
         },
         "description": {
           "type": "string",
@@ -48,7 +48,7 @@
     },
     "steps": {
       "type": "array",
-      "description": "Ordered step definitions, referenced by law provisions for human-readable labels.",
+      "description": "Ordered step definitions, referenced by rule provisions for human-readable labels.",
       "items": {
         "type": "object",
         "required": ["id", "name"],
@@ -74,11 +74,11 @@
         }
       }
     },
-    "laws": {
+    "rules": {
       "type": "array",
-      "description": "The journey's governance laws — each a citable rule, validated holistically against the full composition of a step.",
+      "description": "The journey's governance rules — each a citable rule, validated holistically against the full composition of a step.",
       "minItems": 1,
-      "items": { "$ref": "#/definitions/law" }
+      "items": { "$ref": "#/definitions/rule" }
     },
     "aiHints": {
       "type": "object",
@@ -88,11 +88,11 @@
         "keywords": {
           "type": "array",
           "items": { "type": "string" },
-          "description": "Terms that trigger this journey's laws during intent matching. Become the laws' triggers in the generated index."
+          "description": "Terms that trigger this journey's rules during intent matching. Become the rules' triggers in the generated index."
         },
         "notes": {
           "type": "string",
-          "description": "Natural language guidance for AI agents on how to apply these laws holistically."
+          "description": "Natural language guidance for AI agents on how to apply these rules holistically."
         }
       }
     }
@@ -101,35 +101,35 @@
     "severity": {
       "type": "string",
       "enum": ["error", "warning", "info"],
-      "description": "How hard the law pushes back. error = hard block; warning = flagged for review; info = advisory."
+      "description": "How hard the rule pushes back. error = hard block; warning = flagged for review; info = advisory."
     },
-    "lawId": {
+    "ruleId": {
       "type": "string",
       "pattern": "^[A-Z]{2,6}-[0-9]+$",
-      "description": "Authored, stable law citation (e.g. 'CHK-1'). Never reused once retired."
+      "description": "Authored, stable rule citation (e.g. 'CHK-1'). Never reused once retired."
     },
-    "law": {
+    "rule": {
       "type": "object",
       "required": ["id", "title", "statement", "severity"],
       "additionalProperties": false,
       "properties": {
-        "id": { "$ref": "#/definitions/lawId" },
+        "id": { "$ref": "#/definitions/ruleId" },
         "title": {
           "type": "string",
-          "description": "Short human sentence naming the law."
+          "description": "Short human sentence naming the rule."
         },
         "refines": {
           "type": "string",
           "pattern": "^[A-Z]{2,6}-[0-9]+$",
-          "description": "Id of a generic journey law this law supersedes (lex specialis). Where both apply, this one wins and the generic law is suppressed."
+          "description": "Id of a generic journey rule this rule supersedes (lex specialis). Where both apply, this one wins and the generic rule is suppressed."
         },
         "statement": {
           "type": "string",
-          "description": "The binding text of the law."
+          "description": "The binding text of the rule."
         },
         "rationale": {
           "type": "string",
-          "description": "Why the law exists — the prose justification."
+          "description": "Why the rule exists — the prose justification."
         },
         "severity": { "$ref": "#/definitions/severity" },
         "appliesWhen": {
@@ -143,13 +143,13 @@
         },
         "provisions": {
           "type": "array",
-          "description": "The same law applied to specific steps (the decimal citation, e.g. CHK-1.3).",
+          "description": "The same rule applied to specific steps (the decimal citation, e.g. CHK-1.3).",
           "items": { "$ref": "#/definitions/provision" }
         },
         "status": {
           "type": "string",
           "enum": ["repealed"],
-          "description": "Mark a law repealed: it stays in the authored YAML (its citation is retired, never reused) but is dropped from the generated governance index."
+          "description": "Mark a rule repealed: it stays in the authored YAML (its citation is retired, never reused) but is dropped from the generated governance index."
         }
       }
     },
