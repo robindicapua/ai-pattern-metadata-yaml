@@ -1,147 +1,78 @@
-# Governance Authoring (YAML) — Claude Code Skill
+# governance-kit
 
-A [Claude Code](https://claude.ai/code) skill that owns the **file format** for
-the design system's normative governance — the citable, severity-ranked rules
-about what you *must or must not do* — at **every tier**, authored as YAML and
-validated against JSON Schema:
+A **tool-agnostic pack of skills for design-system governance** — writing,
+checking, and explaining the normative rules that keep a design system
+coherent. The skills are plain Markdown, so any agent (Claude, Gemini, GPT, or a
+human) can read and follow them; nothing here is tied to one assistant.
 
-- **Component** (`<component>.governance.yaml`) — anti-patterns and parent
-  constraints about a single component's own use
-- **Pattern** (`<pattern-id>.governance.yaml`) — composition rules within the
-  named zones of one single-page surface (e.g. a card)
-- **Named journey** (`<journey-id>.governance.yaml`) — composition rules across
-  the steps of one multi-step flow (e.g. checkout), inheriting shared rules via
-  `journey.extends`
-- **Generic journey** (`journey.governance.yaml`) — the single shared file of
-  rules every journey inherits
+Governance rules are authored as YAML next to the thing they govern, validated
+against JSON Schema, and compiled into one token-cheap index ("the codex") that
+an agent reads to resolve *only the rules that apply* to the task in front of it.
 
-**v4** folds component-tier governance back in (it previously lived in the
-component metadata skill), so this skill now covers every governance file
-format. Descriptive component data — API, variants, accessibility, examples —
-is the job of the sibling
-[component-spec](https://github.com/robindicapua/component-spec) skill. **A spec
-describes, governance prescribes.**
+## The three doors (+ internal machinery)
 
----
+| Skill | Role | Verb |
+|---|---|---|
+| [`skills/check`](skills/check/SKILL.md) | Does this design comply? | evaluate a design, cite pass/fail |
+| [`skills/encode`](skills/encode/SKILL.md) | Add / amend / repeal a rule | decide tier + citation, then author |
+| [`skills/explain`](skills/explain/SKILL.md) | What do the rules say about X? | teach the rulebook, cited |
+| [`authoring/FORMAT.md`](authoring/FORMAT.md) | *internal* — the per-tier YAML format | used **by** `encode`, not a door |
 
-## This skill (format) vs. governance-encode (process)
+`check` and `encode` are the read/write pair; `explain` teaches. `authoring` is
+machinery `encode` reads — you never invoke it directly.
 
-This skill is the **format reference**: given a known tier, it tells you the
-exact YAML shape to author. It does **not** decide *whether* a rule should
-exist, *which tier* it belongs to, or *what citation id* it gets — that is the
-job of the project's **governance-encode** skill (the write-path process:
-gate-check → dedupe → classify tier → assign id → `sync:governance`).
-governance-encode reads this skill mid-flow to author the file; you rarely open
-this one cold.
-
----
-
-## What it does
-
-When you (or governance-encode) author governance, this skill instructs Claude
-to produce or edit the right file for the tier:
-
-- **A component rule** — an anti-pattern ("don't use Button for navigation") or
-  a parent-constraint ("no `danger` variant inside a confirmation context")
-- **What composition is required, forbidden, or capped** at each step of a
-  journey ("the confirmation step must show exactly one `success`-variant CTA
-  and must not show `danger`") or each zone of a pattern ("the card footer
-  holds at most two buttons")
-- **Which rules are shared** by every journey, inherited via `journey.extends`
-- **Which named-journey rule supersedes a shared one** (`refines`, lex
-  specialis)
-- **How severe** each rule is (`error` / `warning` / `info`), authored per rule
-
-It does **not** cover descriptive component context (specs) — that's the
-[component-spec](https://github.com/robindicapua/component-spec) skill's job.
-
----
-
-## Why the tiers share one skill
-
-The governance tiers differ in *shape* (component rules use
-`kind: anti-pattern | parent-constraint`; pattern/journey rules use
-`provisions` anchored to zones/steps), but they share the *frame*: citable,
-id-stable, severity-ranked normative rules compiled by `sync:governance` into
-one agent index. The meaningful seam isn't component-vs-composition — it's
-**describe vs. prescribe**. Everything prescriptive lives here; everything
-descriptive lives in `component-spec`.
-
----
-
-## Installation
-
-### 1. Add the skill as a submodule (or copy it into your project)
+## Layout
 
 ```
-.agent/skills/governance-authoring/
+governance-kit/
+├── MODEL.md                    ← governance model (tiers, citations, refine/extends) — starter
+├── skills/                     ← the method (pack-tracked; updates flow)
+│   ├── check/  encode/  explain/
+├── authoring/
+│   ├── FORMAT.md               ← per-tier YAML templates (internal)
+│   └── schemas/*.json          ← JSON Schemas (the starters init copies out)
+├── reference/
+│   ├── sync-governance.mjs     ← compiler: authored YAML → the index
+│   └── validate-governance.mjs ← validator: every *.governance.yaml ↔ its schema
+└── init/                       ← first-run scaffold (SKILL.md + init-governance.mjs)
 ```
 
-### 2. Tell Claude Code about it
+## Install & use
 
-In your project's `CLAUDE.md` or `AGENTS.md`, list it alongside your other
-skills so agents know to check it before authoring governance.
+This is **hybrid** by design: the *method* (skills, format, reference scripts)
+stays in the pack and updates by pulling; the *data* (schemas, and the copies of
+the scripts you run) is **scaffolded into your repo and yours to edit**.
 
-### 3. (Optional) Enable IDE validation
+1. **Install** — add the kit to your repo (conventionally a submodule at
+   `.agent/skills/governance-kit/`), or just copy the folder.
+2. **Init** — follow [`init/SKILL.md`](init/SKILL.md):
+   ```bash
+   node .agent/skills/governance-kit/init/init-governance.mjs
+   ```
+   It copies the schemas into your governance folder, drops in the sync +
+   validate scripts, re-stamps every `*.governance.yaml`'s `$schema` comment, and
+   writes `.kit-version`.
+3. **Wire** `sync:governance` + `validate:governance` npm scripts and run them.
+4. **Author & check** rules with the three skills.
 
-```json
-{
-  "yaml.schemas": {
-    ".agent/skills/governance-authoring/schemas/component-governance.schema.json": [
-      "packages/ui/src/components/**/*.governance.yaml"
-    ],
-    ".agent/skills/governance-authoring/schemas/journey-governance.schema.json": [
-      "packages/ui/src/governance/journey.governance.yaml"
-    ],
-    ".agent/skills/governance-authoring/schemas/journey-instance-governance.schema.json": [
-      "packages/ui/src/journeys/**/*.governance.yaml"
-    ],
-    ".agent/skills/governance-authoring/schemas/pattern-governance.schema.json": [
-      "packages/ui/src/patterns/**/*.governance.yaml"
-    ]
-  }
-}
-```
+Point any agent at the relevant `SKILL.md` — they are self-contained
+instructions, not Claude-specific plugins.
 
----
+## Why the tiers share one pack
 
-## Usage
+Governance rules differ in *shape* per tier (component rules use
+`kind: anti-pattern | parent-constraint`; pattern/journey rules use `provisions`
+anchored to zones/steps), but they share the *frame*: citable, id-stable,
+severity-ranked normative rules compiled into one index. The dividing line that
+matters is **describe vs. prescribe** — everything prescriptive lives here;
+descriptive component specs live in the separate `component-spec` skill.
 
-```
-Add a rule to the checkout-flow journey: the payment step must show a security badge.
-```
+## Versioning
 
-```
-Create a new pattern for a filter bar.
-```
-
-```
-Encode a Button anti-pattern: never use Button for navigation.
-```
-
-Claude will locate the right governance file (or scaffold a new one), assign
-the next rule id for that scope, and validate against the schema. See
-`SKILL.md` for the full workflow, including how it decides between component,
-pattern, named-journey, and generic-journey files.
-
----
-
-## Schemas
-
-Four schemas ship with this skill — see `SKILL.md` → "Schema reference" for the
-full field tables.
-
-- **`component-governance.schema.json`** — one component's anti-patterns and
-  parent constraints (`kind: anti-pattern | parent-constraint`).
-- **`journey-governance.schema.json`** — the single file of generic journey
-  rules, inherited by every named journey via `journey.extends: [journey]`.
-- **`journey-instance-governance.schema.json`** — one named journey's identity,
-  steps, and rules.
-- **`pattern-governance.schema.json`** — one pattern's identity, zones, and
-  rules. No inheritance — each pattern owns its rules outright.
-
----
+The *method* updates when you bump the pack (submodule/pull). Your scaffolded
+*data* is untouched — `.kit-version` records what you scaffolded from, so you can
+diff and pull schema changes forward when you choose to.
 
 ## License
 
-MIT — see [SKILL.md](./SKILL.md) for full attribution.
+MIT.

@@ -1,21 +1,19 @@
 ---
-name: governance-authoring
-version: 4.0.0
-author: Robin Di Capua
-based_on: "ai-pattern-metadata-yaml by Robin Di Capua — which split composition governance out of ai-component-metadata-yaml. v4 folds component-tier governance back in, so this skill now owns every governance file FORMAT across tiers, and the sibling component-spec skill is purely descriptive."
+title: Governance Formats — authoring reference
+role: internal machinery (used by the governance-encode skill; not a door you invoke)
 license: MIT
-description: Author the design system's normative governance files at every tier — component (anti-patterns, parent constraints), single-page pattern (zones), named journey (multi-step flows), and the shared generic journey rules — as YAML validated against JSON Schema. This skill owns the file FORMAT for governance; the governance-encode skill owns the write-path PROCESS (tier classification, citation ids, dedupe, sync) and delegates format authoring here. A spec describes, governance prescribes — descriptive component data lives in the component-spec skill; everything normative lives here.
+based_on: "ai-pattern-metadata-yaml / ai-component-metadata-yaml by Robin Di Capua — folded into governance-kit as the internal format reference."
 ---
 
-**Version:** 4.0.0
-**Last Updated:** 2026-07-20
+**Part of:** governance-kit · **Version:** 1.0.0 · **Last Updated:** 2026-07-20
 
-# Governance Authoring (YAML)
+# Governance Formats — authoring reference
 
-This skill owns the **file format** for the design system's normative
-governance — the citable, severity-ranked rules about what you *must or must
-not do*, authored in YAML next to the thing they govern and compiled by
-`npm run sync:governance` into the agent index at `.ai/governance/index.toon`.
+This is the **format reference** for governance-kit: the exact YAML shape for a
+normative governance file at each tier. It is **internal machinery** — the
+`governance-encode` skill reads it while authoring a rule; you don't invoke it
+directly. Rules are authored in YAML next to the thing they govern and compiled
+by the sync script into the agent index at `.ai/governance/index.toon`.
 
 It covers every tier where rules are co-located:
 
