@@ -1,0 +1,122 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "component-governance.schema.json",
+  "title": "Component Governance Rules",
+  "description": "Schema for a component's normative governance rules — the citable, component-tier rules compiled into the design system's governance index. Descriptive component data (API, variants, a11y) lives in the component-spec skill's component-spec.schema.json.",
+  "type": "object",
+  "required": ["component", "rules"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Path to this JSON Schema for IDE validation and autocomplete."
+    },
+    "component": {
+      "type": "object",
+      "description": "The component these rules govern.",
+      "required": ["name", "scope"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "PascalCase component name (e.g. 'Button', 'Card'). Must match the spec's component.name."
+        },
+        "scope": {
+          "type": "string",
+          "pattern": "^[A-Z]{2,6}$",
+          "description": "The component's scope code from the governance scope registry (e.g. 'BTN'). Every rule id must be prefixed with it."
+        }
+      }
+    },
+    "rules": {
+      "type": "array",
+      "description": "The component-tier governance rules. Each is citable by its authored, stable id.",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "$ref": "#/definitions/ruleId" },
+          "kind": {
+            "type": "string",
+            "enum": ["anti-pattern", "parent-constraint"],
+            "description": "anti-pattern: a usage to avoid. parent-constraint: variants restricted within a named parent context."
+          },
+          "scenario": {
+            "type": "string",
+            "description": "anti-pattern only — what NOT to do."
+          },
+          "reason": {
+            "type": "string",
+            "description": "anti-pattern only — why it's wrong."
+          },
+          "alternative": {
+            "type": "string",
+            "description": "anti-pattern only — what to do instead."
+          },
+          "context": {
+            "type": "string",
+            "description": "parent-constraint only — the parent context this constraint applies in (e.g. 'form-email-collection')."
+          },
+          "description": {
+            "type": "string",
+            "description": "parent-constraint only — what this context is."
+          },
+          "forbidden": {
+            "type": "array",
+            "description": "parent-constraint only — variants that must not be used in this context.",
+            "items": {
+              "type": "object",
+              "required": ["variant"],
+              "additionalProperties": false,
+              "properties": {
+                "variant": { "type": "string" },
+                "reason": { "type": "string" }
+              }
+            }
+          },
+          "recommended": {
+            "type": "array",
+            "description": "parent-constraint only — variants to prefer instead.",
+            "items": {
+              "type": "object",
+              "required": ["variant"],
+              "additionalProperties": false,
+              "properties": {
+                "variant": { "type": "string" }
+              }
+            }
+          },
+          "severity": { "$ref": "#/definitions/severity" },
+          "status": {
+            "type": "string",
+            "enum": ["repealed"],
+            "description": "Mark a rule repealed: it stays in the authored YAML (its citation is retired, never reused) but is dropped from the generated governance index."
+          }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "kind": { "const": "anti-pattern" } } },
+            "then": { "required": ["id", "kind", "scenario", "reason", "alternative"] }
+          },
+          {
+            "if": { "properties": { "kind": { "const": "parent-constraint" } } },
+            "then": { "required": ["id", "kind", "context"] }
+          }
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "ruleId": {
+      "type": "string",
+      "pattern": "^[A-Z]{2,6}-[0-9]+$",
+      "description": "Authored, stable component-tier rule citation, prefixed with the component's scope code (e.g. 'BTN-2'). Never reused once retired."
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["error", "warning", "info"],
+      "description": "How hard the rule pushes back. Defaults: parent-constraint → warning, anti-pattern → info. Set to override."
+    }
+  }
+}
