@@ -81,10 +81,10 @@ user — don't guess.
   script fails the build on reuse).
 - Provisions (`CHK-1.2`) apply one rule to specific situations — prefer them
   over separate rules when the principle is one and the applications are many.
-- **New scope code?** Claim it in BOTH registries:
-  - the scope-code registry table in MODEL.md §2
-  - for components only: also `COMPONENT_SCOPES` in
-    `scripts/sync-governance.mjs`
+- **New scope code?** Claim it once in `scopes.yaml` (the single scope
+  registry — no longer duplicated in MODEL.md or the sync script). For a
+  component, add `tier: component` + `component: <PascalName>` so the sync
+  derives its name↔code map.
 
 ### 5. Author the rule
 

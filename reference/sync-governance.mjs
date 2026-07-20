@@ -46,22 +46,18 @@ const JOURNEY_GENERIC  = join(ROOT, 'packages', 'ui', 'src', 'governance', 'jour
 const OUT_DIR          = join(ROOT, '.ai', 'governance');
 const INDEX_PATH       = join(OUT_DIR, 'index.toon');
 
+const SCOPES_FILE = join(ROOT, 'packages', 'ui', 'src', 'governance', 'scopes.yaml');
+
 /**
- * Component name → scope code. Mirrors the registry in MODEL.md §2.
- * Codes are disambiguated by hand (Checkbox→CBX so it doesn't collide with
- * Checkout→CHK). Add a new code here when a component is first governed.
+ * Component name → scope code, derived from the single-source registry in
+ * scopes.yaml (its `tier: component` entries). Not hand-maintained here — add a
+ * component's code in scopes.yaml when it is first governed (MODEL.md §2).
  */
-const COMPONENT_SCOPES = {
-  Button:    'BTN',
-  Card:      'CAR',
-  Checkbox:  'CBX',
-  FilterChip: 'FCH',
-  Icon:      'ICO',
-  Radio:     'RAD',
-  Text:      'TXT',
-  TextInput: 'TIN',
-  Title:     'TTL',
-};
+const COMPONENT_SCOPES = Object.fromEntries(
+  (yaml.load(readFileSync(SCOPES_FILE, 'utf8'))?.scopes || [])
+    .filter((s) => s.tier === 'component' && s.component)
+    .map((s) => [s.component, s.code]),
+);
 
 // ─── TOON serializer ──────────────────────────────────────────────────────────
 // Matches the indented dialect used elsewhere in .ai/*.toon: nested maps,

@@ -41,7 +41,9 @@ node .agent/skills/governance-kit/init/init-governance.mjs
 ```
 
 It will, printing each action:
-1. copy the schemas → `<GOVERNANCE_DIR>/schemas/` (yours to tweak),
+1. copy the schemas → `<GOVERNANCE_DIR>/schemas/` and the scope-registry
+   starter → `<GOVERNANCE_DIR>/scopes.yaml` (both yours to tweak; an existing
+   `scopes.yaml` is kept),
 2. copy `sync-governance.mjs` + `validate-governance.mjs` → `<SCRIPTS_DIR>/`
    (keeps an existing sync script unless `--force`),
 3. re-stamp every `*.governance.yaml`'s `# yaml-language-server: $schema=…`

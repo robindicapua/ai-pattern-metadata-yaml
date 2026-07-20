@@ -1,0 +1,31 @@
+# Scope-code registry — STARTER (governance-kit)
+#
+# `init` scaffolds this to <governance dir>/scopes.yaml, where it becomes the
+# single source of truth for governance scope codes. It is read by
+# sync-governance.mjs (which derives the component name↔code map from the
+# `tier: component` entries) and referenced by MODEL.md §2 — so the list is
+# never duplicated in prose.
+#
+# Codes are 2–6 uppercase letters. A retired code is never reused. A subject may
+# be governed at more than one tier, with a DISTINCT code per tier (e.g. a Card
+# component `CAR` and a Card pattern `CRD`).
+
+scopes:
+  - code: GLB
+    tier: global
+    subject: design-system-wide principles
+  - code: JRN
+    tier: journey            # generic — shared by every multi-step journey
+    subject: multi-step journeys
+
+  # Claim a code when a subject is first governed. Examples:
+  # - code: BTN
+  #   tier: component
+  #   component: Button       # PascalCase name → drives the name↔code map
+  #   subject: Button
+  # - code: CHK
+  #   tier: journey           # named journey
+  #   subject: Checkout Flow
+  # - code: CRD
+  #   tier: pattern
+  #   subject: Card

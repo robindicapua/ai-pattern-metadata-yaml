@@ -98,23 +98,12 @@ No `GOV-` prefix — everything here is governance, so it would be noise.
 
 ### Scope-code registry
 
-| Code | Tier | Subject |
-|---|---|---|
-| `GLB` | global | design-system-wide principles |
-| `JRN` | journey (generic) | multi-step journeys (checkout, onboarding, wizards) |
-| `BTN` | component | Button |
-| `CAR` | component | Card |
-| `CBX` | component | Checkbox |
-| `FCH` | component | FilterChip |
-| `ICO` | component | Icon |
-| `RAD` | component | Radio |
-| `TIN` | component | TextInput |
-| `TTL` | component | Title |
-| `CHK` | journey (named) | Checkout Flow |
-| `CRD` | pattern | Card |
-| `CONF` | context | destructive-confirmation situation *(deferred)* |
-
-New components/journeys/patterns claim a new code here when first governed.
+The registry of every claimed scope code is **data, not prose** — it lives in
+`scopes.yaml` beside this file, per the repo's "format by who reads it" rule.
+`sync-governance.mjs` reads it directly (deriving the component name↔code map
+from the `tier: component` entries), so the list is never duplicated here. Claim
+a new code in `scopes.yaml` when a component, journey, or pattern is first
+governed; a retired code is never reused.
 
 A subject may be governed at more than one tier, with a **distinct code per
 tier**. Card is the first: it is governed both as a component (`CAR` — rules

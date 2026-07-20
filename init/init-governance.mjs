@@ -65,6 +65,15 @@ function step1_schemas() {
   return dest;
 }
 
+function step_scopes() {
+  const src = join(PACK_DIR, 'authoring', 'scopes.starter.yaml');
+  const dest = abs(join(GOVERNANCE_DIR, 'scopes.yaml'));
+  if (existsSync(dest) && !FORCE) { log(`scopes: kept existing ${GOVERNANCE_DIR}/scopes.yaml`); return; }
+  if (!existsSync(src)) { log('scopes: no starter in pack — skipped'); return; }
+  copyFileSync(src, dest);
+  log(`scopes → ${GOVERNANCE_DIR}/scopes.yaml (starter registry — grow it as you govern)`);
+}
+
 function step2_scripts() {
   const src = join(PACK_DIR, 'reference');
   const dest = abs(SCRIPTS_DIR);
@@ -103,6 +112,7 @@ function step4_version() {
 
 console.log(`\n▶ governance-kit init → ${REPO_ROOT}\n`);
 const schemaDir = step1_schemas();
+step_scopes();
 step2_scripts();
 step3_restamp(schemaDir);
 step4_version();
